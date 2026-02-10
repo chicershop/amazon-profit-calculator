@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { calculateProfit, meetsProfitThreshold } from '../utils/calculator';
+import { calculateFbaFee } from '../utils/fbaFees';
 
 /**
  * 利益計算用カスタムフック
@@ -77,6 +78,17 @@ export const useCalculation = (settings) => {
     return { valid: true };
   }, [inputs]);
 
+  // FBA配送代行手数料の自動計算結果（サイズ・重量・販売価格から算出）
+  const fbaFeeResult = useMemo(() => {
+    const l = parseFloat(inputs.length);
+    const w = parseFloat(inputs.width);
+    const h = parseFloat(inputs.height);
+    const wgt = parseFloat(inputs.weight);
+    const price = parseFloat(inputs.sellingPrice);
+    if ([l, w, h, wgt].some(v => isNaN(v) || v < 0)) return null;
+    return calculateFbaFee(l, w, h, wgt, price);
+  }, [inputs.length, inputs.width, inputs.height, inputs.weight, inputs.sellingPrice]);
+
   // 計算を実行
   const calculate = useCallback(() => {
     const validation = validateInputs();
@@ -86,6 +98,7 @@ export const useCalculation = (settings) => {
     }
 
     try {
+      const fbaFee = fbaFeeResult?.fee ?? (parseFloat(inputs.fbaFee) || 0);
       const params = {
         productCost: parseFloat(inputs.productCost) || 0,
         sellingPrice: parseFloat(inputs.sellingPrice) || 0,
@@ -95,7 +108,7 @@ export const useCalculation = (settings) => {
         weight: parseFloat(inputs.weight) || 0,
         salesFee: parseFloat(inputs.salesFee) || 0,
         storageFee: parseFloat(inputs.storageFee) || 0,
-        fbaFee: parseFloat(inputs.fbaFee) || 0,
+        fbaFee,
         optionCost: settings.optionCost,
         shippingRate: settings.shippingRate,
         tariffRate: settings.tariffRate,
@@ -115,12 +128,13 @@ export const useCalculation = (settings) => {
       setError('計算中にエラーが発生しました');
       return null;
     }
-  }, [inputs, settings, validateInputs]);
+  }, [inputs, settings, validateInputs, fbaFeeResult]);
 
   return {
     inputs,
     result,
     error,
+    fbaFeeResult,
     updateInput,
     updateInputs,
     resetInputs,

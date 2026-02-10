@@ -53,9 +53,13 @@ export const extractProductName = (title) => {
  * チャットワーク依頼テキストを生成
  * @param {string} productName - 商品名
  * @param {string} amazonLink - Amazonライバル商品リンク
+ * @param {string} [specialSpecs] - 特記する仕様（任意）
  * @returns {string} チャットワーク用テキスト
  */
-export const generateChatworkText = (productName, amazonLink) => {
+export const generateChatworkText = (productName, amazonLink, specialSpecs = '') => {
+  const specBlock = specialSpecs && specialSpecs.trim()
+    ? `\n【特記する仕様】\n${specialSpecs.trim()}\n`
+    : '';
   return `【${productName}】について
 
 品質の条件内で最安値の商品を選定してください
@@ -63,7 +67,7 @@ export const generateChatworkText = (productName, amazonLink) => {
 
 ・リンク先の類似仕様の商品を選定してください
 ・品質★4以上
-
+${specBlock}
 ${amazonLink}`;
 };
 

@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * 利益計算入力フォームコンポーネント
  */
-const ProfitCalculator = ({ inputs, onInputChange, onCalculate, error, settings }) => {
+const ProfitCalculator = ({ inputs, onInputChange, onCalculate, error, settings, fbaFeeResult }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onCalculate();
@@ -175,14 +175,15 @@ const ProfitCalculator = ({ inputs, onInputChange, onCalculate, error, settings 
             <div className="form-group">
               <label htmlFor="fbaFee">FBA配送代行手数料（円）</label>
               <input
-                type="number"
+                type="text"
                 id="fbaFee"
-                value={inputs.fbaFee}
-                onChange={handleInputChange('fbaFee')}
-                placeholder="0"
-                step="1"
-                min="0"
+                value={fbaFeeResult != null ? `${fbaFeeResult.fee}円（${fbaFeeResult.tierName}・自動）` : (inputs.fbaFee ? `${inputs.fbaFee}円` : '—')
+                }
+                readOnly
+                className="readonly"
+                placeholder="サイズ・重量・販売価格を入力すると自動計算"
               />
+              <p className="help-text">縦・横・高さ・重量・販売価格から自動計算（<a href="https://sell.amazon.co.jp/pricing#fulfillment-fees" target="_blank" rel="noopener noreferrer">FBA料金表</a>）</p>
             </div>
           </div>
         </div>

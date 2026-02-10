@@ -40,13 +40,13 @@ const LISTING_RULES = `【0. 大前提（絶対厳守）】
  * 完了ステータスの商品向けにClaude Code用プロンプトを生成
  */
 const ProductListingGenerator = ({ historyItem, onBack }) => {
-  const [specialSpecs, setSpecialSpecs] = useState('');
   const [prompt, setPrompt] = useState('');
   const [copied, setCopied] = useState(false);
 
   const competitors = historyItem?.detailResearch?.competitors || [];
   const keywords = historyItem?.detailResearch?.sellerSpriteData?.keywords || [];
   const productName = historyItem?.productName || historyItem?.inputs?.productName || '';
+  const specialSpecs = historyItem?.detailResearch?.specialSpecs ?? '';
 
   const generatePrompt = () => {
     const competitorInfo = competitors.map(c =>
@@ -113,12 +113,7 @@ ${LISTING_RULES}`;
 
       <div className="form-section">
         <h3>特記する仕様</h3>
-        <textarea
-          value={specialSpecs}
-          onChange={(e) => setSpecialSpecs(e.target.value)}
-          placeholder="商品の特記すべき仕様を入力してください（素材、サイズ詳細、使用上の注意など）"
-          rows={4}
-        />
+        <p className="special-specs-display">{specialSpecs || '（チャットワーク依頼テキストページで入力した内容が反映されます）'}</p>
       </div>
 
       <div className="form-actions">
@@ -142,7 +137,7 @@ ${LISTING_RULES}`;
             </button>
           </div>
           <p className="help-text">
-            このプロンプトをClaude Codeに送信すると、商品タイトル・仕様・検索キーワード・BADレビュー対策がタブ区切りで出力されます
+            プロンプトをクリップボードにコピーし、Claudeの画面に貼り付けて送信すると、商品タイトル・仕様・検索キーワード・BADレビュー対策がタブ区切りで出力されます。
           </p>
         </div>
       )}

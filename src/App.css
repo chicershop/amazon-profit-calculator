@@ -195,6 +195,92 @@ h4 {
   margin-top: 0.25rem;
 }
 
+.help-text.success {
+  color: var(--success-color);
+}
+
+.help-text.error {
+  color: var(--danger-color);
+  margin-top: 0.5rem;
+}
+
+.help-text.task-message {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-group input.full-width,
+.form-group textarea.full-width {
+  width: 100%;
+}
+
+/* リサーチ結果 */
+.research-result {
+  background: var(--light-gray);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.research-placeholder p {
+  margin-bottom: 0.5rem;
+}
+
+.research-block {
+  margin-top: 1rem;
+}
+
+.research-block h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.review-good,
+.review-bad {
+  margin-bottom: 0.5rem;
+}
+
+.image-plan {
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+  background: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.review-points,
+.review-bodies {
+  margin: 0.5rem 0 0 1rem;
+  padding-left: 1rem;
+}
+
+.review-points li,
+.review-bodies li {
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.review-points.good li { color: var(--success-color); }
+.review-points.bad li { color: var(--danger-color); }
+
+.review-body-item {
+  white-space: pre-wrap;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem !important;
+  border-left: 3px solid var(--border-color);
+}
+
+.scraping-result .research-block { margin-top: 1rem; }
+
+.special-specs-display {
+  white-space: pre-wrap;
+  background: var(--light-gray);
+  padding: 0.75rem;
+  border-radius: 4px;
+  min-height: 2rem;
+}
+
 /* ボタン */
 .btn {
   display: inline-flex;

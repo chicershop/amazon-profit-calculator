@@ -3,11 +3,25 @@ import { extractProductName, generateChatworkText, copyToClipboard } from '../ut
 
 /**
  * チャットワーク依頼テキスト生成コンポーネント
+ * 特記する仕様はここで入力し、依頼テキストと商品ページ作成プロンプトの両方に反映されます。
  */
-const ChatworkOutput = ({ productTitle, productLink, onComplete, onBack, onGoToProductListing }) => {
+const ChatworkOutput = ({
+  productTitle,
+  productLink,
+  initialSpecialSpecs = '',
+  onComplete,
+  onBack,
+  onGoToProductListing,
+}) => {
   const [productName, setProductName] = useState('');
+  const [specialSpecs, setSpecialSpecs] = useState(initialSpecialSpecs || '');
   const [outputText, setOutputText] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // 親から渡された特記仕様が変わったら同期（履歴から復元時など）
+  useEffect(() => {
+    setSpecialSpecs(initialSpecialSpecs || '');
+  }, [initialSpecialSpecs]);
 
   // 商品タイトルから商品名を自動抽出
   useEffect(() => {
@@ -17,11 +31,11 @@ const ChatworkOutput = ({ productTitle, productLink, onComplete, onBack, onGoToP
     }
   }, [productTitle]);
 
-  // 出力テキストを生成
+  // 出力テキストを生成（特記する仕様を含む）
   useEffect(() => {
-    const text = generateChatworkText(productName || '商品名', productLink || '');
+    const text = generateChatworkText(productName || '商品名', productLink || '', specialSpecs);
     setOutputText(text);
-  }, [productName, productLink]);
+  }, [productName, productLink, specialSpecs]);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(outputText);
@@ -58,6 +72,17 @@ const ChatworkOutput = ({ productTitle, productLink, onComplete, onBack, onGoToP
             className="readonly"
           />
         </div>
+
+        <div className="form-group">
+          <label htmlFor="specialSpecs">特記する仕様</label>
+          <textarea
+            id="specialSpecs"
+            value={specialSpecs}
+            onChange={(e) => setSpecialSpecs(e.target.value)}
+            placeholder="商品の特記すべき仕様（素材、サイズ詳細、使用上の注意など）。依頼テキストと商品ページ作成プロンプトの両方に反映されます。"
+            rows={4}
+          />
+        </div>
       </div>
 
       <div className="output-section">
@@ -83,11 +108,11 @@ const ChatworkOutput = ({ productTitle, productLink, onComplete, onBack, onGoToP
           </button>
         )}
         {onGoToProductListing && (
-          <button type="button" className="btn btn-primary" onClick={onGoToProductListing}>
+          <button type="button" className="btn btn-primary" onClick={() => onGoToProductListing(specialSpecs)}>
             商品ページ作成
           </button>
         )}
-        <button type="button" className="btn btn-success" onClick={onComplete}>
+        <button type="button" className="btn btn-success" onClick={() => onComplete(specialSpecs)}>
           完了
         </button>
       </div>

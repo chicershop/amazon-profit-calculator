@@ -100,10 +100,16 @@ function App() {
     setCurrentStep(STEPS.RESULT);
   }, []);
 
-  // 商品ページ作成へ遷移
-  const handleGoToProductListing = useCallback(() => {
+  // 商品ページ作成へ遷移（特記する仕様を履歴に保存してから遷移）
+  const handleGoToProductListing = useCallback((specialSpecs = '') => {
+    if (currentHistoryId) {
+      const current = getHistoryById(currentHistoryId);
+      updateHistory(currentHistoryId, {
+        detailResearch: { ...(current?.detailResearch || {}), specialSpecs },
+      });
+    }
     setCurrentStep(STEPS.PRODUCT_LISTING);
-  }, []);
+  }, [currentHistoryId, getHistoryById, updateHistory]);
 
   // Chatwork画面に戻る
   const handleBackToChatwork = useCallback(() => {
@@ -115,15 +121,19 @@ function App() {
     setCurrentStep(STEPS.DETAIL_RESEARCH);
   }, []);
 
-  // 完了
-  const handleComplete = useCallback(() => {
+  // 完了（特記する仕様を履歴に保存してから完了）
+  const handleComplete = useCallback((specialSpecs = '') => {
     if (currentHistoryId) {
-      updateHistory(currentHistoryId, { status: 'completed' });
+      const current = getHistoryById(currentHistoryId);
+      updateHistory(currentHistoryId, {
+        detailResearch: { ...(current?.detailResearch || {}), specialSpecs },
+        status: 'completed',
+      });
     }
     calculation.resetInputs();
     setCurrentStep(STEPS.INPUT);
     setCurrentHistoryId(null);
-  }, [currentHistoryId, updateHistory, calculation]);
+  }, [currentHistoryId, getHistoryById, updateHistory, calculation]);
 
   // 新規作成
   const handleNewResearch = useCallback(() => {
@@ -221,6 +231,7 @@ function App() {
             onCalculate={handleCalculate}
             error={calculation.error}
             settings={settings}
+            fbaFeeResult={calculation.fbaFeeResult}
           />
         );
 
@@ -262,6 +273,7 @@ function App() {
           <ChatworkOutput
             productTitle={currentHistoryItem?.productName || currentHistoryItem?.inputs?.productName || calculation.inputs.asin}
             productLink={currentHistoryItem?.productLink || calculation.inputs.productLink}
+            initialSpecialSpecs={currentHistoryItem?.detailResearch?.specialSpecs ?? ''}
             onComplete={handleComplete}
             onBack={handleBackToDetailResearch}
             onGoToProductListing={handleGoToProductListing}
