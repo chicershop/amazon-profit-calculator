@@ -99,6 +99,78 @@ body {
   font-size: 0.875rem;
 }
 
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--medium-gray);
+}
+
+/* ログイン・オーナー設定画面 */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--light-gray);
+}
+
+.login-box {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.login-box h2 {
+  margin-bottom: 1rem;
+}
+
+.login-box .form-group {
+  margin-bottom: 1rem;
+}
+
+.login-box .form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  font-size: 0.875rem;
+}
+
+.user-email {
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.owner-badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.header-user .btn-small {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.875rem;
+}
+
 /* セクション */
 .profit-calculator,
 .profit-result,

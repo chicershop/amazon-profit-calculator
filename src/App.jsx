@@ -7,8 +7,12 @@ import ChatworkOutput from './components/ChatworkOutput';
 import ProductListingGenerator from './components/ProductListingGenerator';
 import HistoryList from './components/HistoryList';
 import Settings from './components/Settings';
+import Login from './components/Login';
+import SetOwnerScreen from './components/SetOwnerScreen';
 import { useHistory, useSettings } from './hooks/useLocalStorage';
+import { useFirestoreHistory } from './hooks/useFirestoreHistory';
 import { useCalculation } from './hooks/useCalculation';
+import { useAuth } from './contexts/AuthContext';
 import './App.css';
 
 // アプリケーションのステート
@@ -33,16 +37,21 @@ function App() {
   const [currentStep, setCurrentStep] = useState(STEPS.INPUT);
   const [currentHistoryId, setCurrentHistoryId] = useState(null);
 
+  const { user, loading, isFirebaseEnabled, showOwnerSetup, isOwner, signOut } = useAuth();
+  const localHistory = useHistory();
+  const firestoreHistory = useFirestoreHistory();
+  const historyApi = isFirebaseEnabled && user ? firestoreHistory : localHistory;
+  const { history, addHistory, updateHistory, deleteHistory, clearHistory, getHistoryById } = historyApi;
+
   const { settings, updateSettings, resetSettings, defaultSettings } = useSettings();
-  const { history, addHistory, updateHistory, deleteHistory, clearHistory, getHistoryById } = useHistory();
   const calculation = useCalculation(settings);
 
-  // 計算実行
-  const handleCalculate = useCallback(() => {
+  // ※ フックは常に同じ順で呼ぶ必要があるため、早期 return の前にすべて定義する
+  // 計算実行（Firestore の addHistory は非同期）
+  const handleCalculate = useCallback(async () => {
     const result = calculation.calculate();
     if (result) {
-      // 履歴に追加
-      const id = addHistory({
+      const id = await addHistory({
         asin: calculation.inputs.asin,
         productLink: calculation.inputs.productLink,
         productName: calculation.inputs.productName,
@@ -188,8 +197,28 @@ function App() {
     }
   }, [clearHistory, calculation]);
 
+  // 承認（オーナーのみ・承認待ち→完了）
+  const handleApprove = useCallback((id) => {
+    updateHistory(id, { status: 'completed' });
+  }, [updateHistory]);
+
   // 現在の履歴データを取得
   const currentHistoryItem = currentHistoryId ? getHistoryById(currentHistoryId) : null;
+
+  // ここから下は表示の分岐（フックはすべて上で呼び済み）
+  if (loading) {
+    return (
+      <div className="app-loading">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+  if (isFirebaseEnabled && !user) {
+    return <Login />;
+  }
+  if (showOwnerSetup) {
+    return <SetOwnerScreen />;
+  }
 
   // メインコンテンツのレンダリング
   const renderMainContent = () => {
@@ -201,6 +230,8 @@ function App() {
             onSelect={handleSelectHistory}
             onDelete={handleDeleteHistory}
             onClear={handleClearHistory}
+            onApprove={handleApprove}
+            isOwner={isOwner}
           />
         );
 
@@ -316,6 +347,15 @@ function App() {
           >
             設定
           </button>
+          {user && (
+            <span className="header-user">
+              <span className="user-email">{user.email}</span>
+              {isOwner && <span className="owner-badge">オーナー</span>}
+              <button type="button" className="btn btn-small btn-secondary" onClick={signOut}>
+                ログアウト
+              </button>
+            </span>
+          )}
         </nav>
       </header>
 

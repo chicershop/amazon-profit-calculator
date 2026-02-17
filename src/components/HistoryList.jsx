@@ -3,8 +3,9 @@ import { downloadCSV, downloadJSON } from '../utils/exportData';
 
 /**
  * 履歴一覧コンポーネント
+ * isOwner の場合、承認待ちに「承認」ボタンを表示
  */
-const HistoryList = ({ history, onSelect, onDelete, onClear }) => {
+const HistoryList = ({ history, onSelect, onDelete, onClear, onApprove, isOwner }) => {
   const [filter, setFilter] = useState('all');
   const [searchText, setSearchText] = useState('');
 
@@ -157,6 +158,15 @@ const HistoryList = ({ history, onSelect, onDelete, onClear }) => {
                   </td>
                   <td>
                     <div className="action-buttons">
+                      {isOwner && item.status === 'awaiting_approval' && onApprove && (
+                        <button
+                          type="button"
+                          className="btn btn-small btn-success"
+                          onClick={() => onApprove(item.id)}
+                        >
+                          承認
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="btn btn-small btn-primary"
