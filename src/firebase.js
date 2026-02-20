@@ -38,3 +38,8 @@ try {
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 export const isFirebaseEnabled = !!app;
+
+/** 本番で Firebase が無効なとき、未設定の環境変数名の一覧（Vercel で追加する際の参考用） */
+export function getMissingFirebaseEnvKeys() {
+  return requiredEnvKeys.filter((key) => !process.env[key]);
+}

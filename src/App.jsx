@@ -13,6 +13,7 @@ import { useHistory, useSettings } from './hooks/useLocalStorage';
 import { useFirestoreHistory } from './hooks/useFirestoreHistory';
 import { useCalculation } from './hooks/useCalculation';
 import { useAuth } from './contexts/AuthContext';
+import { getMissingFirebaseEnvKeys } from './firebase';
 import './App.css';
 
 // アプリケーションのステート
@@ -366,7 +367,25 @@ function App() {
       <footer className="app-footer">
         <p>Amazon販売 利益計算ツール v1.0</p>
         <p className="firebase-status" aria-live="polite">
-          {isFirebaseEnabled ? 'Firebase: 有効（履歴は共有されます）' : 'Firebase: 無効（履歴はこの端末のみ。共有するには本番の環境変数を確認してください）'}
+          {isFirebaseEnabled
+            ? 'Firebase: 有効（履歴は共有されます）'
+            : (
+                <>
+                  Firebase: 無効（履歴はこの端末のみ）。
+                  {(() => {
+                    const missing = getMissingFirebaseEnvKeys();
+                    if (missing.length > 0) {
+                      return (
+                        <span className="firebase-missing-keys">
+                          {' '}
+                          Vercel の Environment Variables に次を追加し、Production にチェックを入れてから再デプロイしてください: {missing.join(', ')}
+                        </span>
+                      );
+                    }
+                    return ' 本番の環境変数を確認し、再デプロイしてください。';
+                  })()}
+                </>
+              )}
         </p>
       </footer>
     </div>
