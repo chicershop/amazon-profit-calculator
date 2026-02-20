@@ -99,6 +99,12 @@ body {
   font-size: 0.875rem;
 }
 
+.app-footer .firebase-status {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .app-loading {
   min-height: 100vh;
   display: flex;

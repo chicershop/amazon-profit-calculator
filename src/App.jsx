@@ -365,6 +365,9 @@ function App() {
 
       <footer className="app-footer">
         <p>Amazon販売 利益計算ツール v1.0</p>
+        <p className="firebase-status" aria-live="polite">
+          {isFirebaseEnabled ? 'Firebase: 有効（履歴は共有されます）' : 'Firebase: 無効（履歴はこの端末のみ。共有するには本番の環境変数を確認してください）'}
+        </p>
       </footer>
     </div>
   );
