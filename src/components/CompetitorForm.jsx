@@ -97,13 +97,30 @@ const CompetitorForm = ({ competitor, index, onChange, onRemove, canRemove }) =>
             type="number"
             value={competitor.monthlyRevenue}
             onChange={handleChange('monthlyRevenue')}
-            placeholder="0"
+            placeholder="販売価格×月間販売数で自動入力"
             min="0"
           />
+          <p className="help-text">販売価格と月間販売数を入力すると自動計算されます（上書き可能）</p>
         </div>
       </div>
     </div>
   );
+};
+
+/**
+ * 月間販売額（円）＝ 販売価格 × 月間販売数 で自動計算（詳細リサーチ・履歴の正規化でも使用）
+ */
+export const calcMonthlyRevenue = (price, monthlySales) => {
+  const p = parseFloat(price);
+  const m = parseFloat(monthlySales);
+  if (Number.isNaN(p) || Number.isNaN(m) || p < 0 || m < 0) return '';
+  return String(Math.round(p * m));
+};
+
+/** ライバル1件の月間販売額を自動算出して埋める（履歴から開いたとき用） */
+export const normalizeCompetitorMonthlyRevenue = (c) => {
+  const revenue = calcMonthlyRevenue(c.price, c.monthlySales);
+  return { ...c, monthlyRevenue: revenue || c.monthlyRevenue || '' };
 };
 
 /**
@@ -113,6 +130,13 @@ export const CompetitorFormList = ({ competitors, onUpdate, onAdd, onRemove }) =
   const handleChange = (index, field, value) => {
     const updated = [...competitors];
     updated[index] = { ...updated[index], [field]: value };
+    // 販売価格または月間販売数が変わったら、月間販売額を自動入力
+    if (field === 'price' || field === 'monthlySales') {
+      updated[index].monthlyRevenue = calcMonthlyRevenue(
+        field === 'price' ? value : updated[index].price,
+        field === 'monthlySales' ? value : updated[index].monthlySales
+      );
+    }
     onUpdate(updated);
   };
 

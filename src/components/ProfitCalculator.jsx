@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * 利益計算入力フォームコンポーネント
  */
-const ProfitCalculator = ({ inputs, onInputChange, onCalculate, error, settings, fbaFeeResult }) => {
+const ProfitCalculator = ({ inputs, onInputChange, onCalculate, onStartNew, error, settings, fbaFeeResult }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onCalculate();
@@ -202,6 +202,15 @@ const ProfitCalculator = ({ inputs, onInputChange, onCalculate, error, settings,
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary">計算する</button>
+          {onStartNew && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onStartNew}
+            >
+              新規作成
+            </button>
+          )}
         </div>
       </form>
     </div>

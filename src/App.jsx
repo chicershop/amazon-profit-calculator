@@ -48,22 +48,28 @@ function App() {
   const calculation = useCalculation(settings);
 
   // ※ フックは常に同じ順で呼ぶ必要があるため、早期 return の前にすべて定義する
-  // 計算実行（Firestore の addHistory は非同期）
+  // 計算実行（既存プロジェクトなら更新、なければ新規追加）
   const handleCalculate = useCallback(async () => {
     const result = calculation.calculate();
     if (result) {
-      const id = await addHistory({
+      const payload = {
         asin: calculation.inputs.asin,
         productLink: calculation.inputs.productLink,
         productName: calculation.inputs.productName,
         inputs: { ...calculation.inputs },
-        result: result,
+        result,
         status: 'pending',
-      });
-      setCurrentHistoryId(id);
-      setCurrentStep(STEPS.RESULT);
+      };
+      if (currentHistoryId) {
+        await updateHistory(currentHistoryId, payload);
+        setCurrentStep(STEPS.RESULT);
+      } else {
+        const id = await addHistory(payload);
+        setCurrentHistoryId(id);
+        setCurrentStep(STEPS.RESULT);
+      }
     }
-  }, [calculation, addHistory]);
+  }, [calculation, addHistory, updateHistory, currentHistoryId]);
 
   // OK判定
   const handleJudgmentOk = useCallback(() => {
@@ -84,15 +90,13 @@ function App() {
     setCurrentHistoryId(null);
   }, [currentHistoryId, updateHistory, calculation]);
 
-  // 保存（承認待ち）
+  // 保存（承認待ち）— 同じプロジェクトのまま入力画面に戻る
   const handleSave = useCallback(() => {
     if (currentHistoryId) {
       updateHistory(currentHistoryId, { status: 'awaiting_approval' });
     }
-    calculation.resetInputs();
     setCurrentStep(STEPS.INPUT);
-    setCurrentHistoryId(null);
-  }, [currentHistoryId, updateHistory, calculation]);
+  }, [currentHistoryId, updateHistory]);
 
   // 詳細リサーチ保存
   const handleDetailResearchSave = useCallback((data) => {
@@ -145,25 +149,37 @@ function App() {
     setCurrentHistoryId(null);
   }, [currentHistoryId, getHistoryById, updateHistory, calculation]);
 
-  // 新規作成
+  // 利益計算タブへ（現在のプロジェクトがあればそのデータのみ表示、なければ新規の空）
   const handleNewResearch = useCallback(() => {
-    calculation.resetInputs();
+    setCurrentView(VIEWS.CALCULATOR);
     setCurrentStep(STEPS.INPUT);
+    if (currentHistoryId) {
+      const item = getHistoryById(currentHistoryId);
+      calculation.resetInputs();
+      if (item?.inputs) calculation.updateInputs(item.inputs);
+    } else {
+      calculation.resetInputs();
+    }
+  }, [calculation, currentHistoryId, getHistoryById]);
+
+  // 新規作成（プロジェクトをリセットして空の入力から開始）
+  const handleStartNewResearch = useCallback(() => {
+    calculation.resetInputs();
     setCurrentHistoryId(null);
+    setCurrentStep(STEPS.INPUT);
     setCurrentView(VIEWS.CALCULATOR);
   }, [calculation]);
 
-  // 履歴から選択
+  // 履歴から選択（常にその1件として扱い、入力はその項目のデータで上書き）
   const handleSelectHistory = useCallback((item) => {
     setCurrentHistoryId(item.id);
+    calculation.resetInputs();
     calculation.updateInputs(item.inputs || {});
 
     // ステータスに応じてステップを設定
     if (item.status === 'ng') {
-      // NGは閲覧のみ
       setCurrentStep(STEPS.RESULT);
     } else if (item.status === 'awaiting_approval') {
-      // 承認待ちは結果画面へ
       setCurrentStep(STEPS.RESULT);
     } else if (item.status === 'completed') {
       setCurrentStep(STEPS.CHATWORK);
@@ -261,6 +277,7 @@ function App() {
             inputs={calculation.inputs}
             onInputChange={calculation.updateInput}
             onCalculate={handleCalculate}
+            onStartNew={handleStartNewResearch}
             error={calculation.error}
             settings={settings}
             fbaFeeResult={calculation.fbaFeeResult}
@@ -294,6 +311,7 @@ function App() {
       case STEPS.DETAIL_RESEARCH:
         return (
           <DetailResearch
+            key={currentHistoryId ?? 'new'}
             initialData={currentHistoryItem?.detailResearch}
             onSave={handleDetailResearchSave}
             onCancel={handleDetailResearchCancel}

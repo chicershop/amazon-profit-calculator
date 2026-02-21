@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CompetitorFormList } from './CompetitorForm';
+import { CompetitorFormList, normalizeCompetitorMonthlyRevenue } from './CompetitorForm';
 import SellerSpriteInput from './SellerSpriteInput';
 
 /**
@@ -16,9 +16,11 @@ const DetailResearch = ({ initialData, onSave, onCancel }) => {
     monthlyRevenue: '',
   };
 
-  const [competitors, setCompetitors] = useState(
-    initialData?.competitors?.length > 0 ? initialData.competitors : [{ ...emptyCompetitor }]
-  );
+  // 履歴から開いた場合も月間販売額＝販売価格×月間販売数で自動反映
+  const [competitors, setCompetitors] = useState(() => {
+    const list = initialData?.competitors?.length > 0 ? initialData.competitors : [{ ...emptyCompetitor }];
+    return list.map(normalizeCompetitorMonthlyRevenue);
+  });
 
   const [sellerSpriteData, setSellerSpriteData] = useState(
     initialData?.sellerSpriteData || {
