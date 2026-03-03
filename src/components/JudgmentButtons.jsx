@@ -2,38 +2,21 @@ import React from 'react';
 
 /**
  * OK/NG判定ボタンコンポーネント
+ * 利益率に関わらずOK・NG・保存のいずれも選択可能
  */
 const JudgmentButtons = ({ result, threshold, onOk, onNg, onSave }) => {
   if (!result) return null;
 
-  // 基準値以上の場合は自動的に詳細リサーチへ
-  if (result.meetsThreshold) {
-    return (
-      <div className="judgment-section">
-        <div className="judgment-auto">
-          <p className="judgment-message success">
-            粗利益率が{threshold}%以上のため、詳細リサーチに進みます
-          </p>
-          <div className="judgment-buttons">
-            <button className="btn btn-primary" onClick={onOk}>
-              詳細リサーチへ進む
-            </button>
-            <button className="btn btn-secondary" onClick={onSave}>
-              保存（後で判定）
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const meetsThreshold = result.meetsThreshold;
+  const messageClass = meetsThreshold ? 'success' : 'warning';
+  const messageText = meetsThreshold
+    ? `粗利益率が${threshold}%以上です。詳細リサーチに進みますか？`
+    : `粗利益率が${threshold}%未満です。詳細リサーチに進みますか？`;
 
-  // 基準値未満の場合はOK/NGボタンを表示
   return (
     <div className="judgment-section">
-      <div className="judgment-manual">
-        <p className="judgment-message warning">
-          粗利益率が{threshold}%未満です。詳細リサーチに進みますか？
-        </p>
+      <div className={meetsThreshold ? 'judgment-auto' : 'judgment-manual'}>
+        <p className={`judgment-message ${messageClass}`}>{messageText}</p>
         <div className="judgment-buttons">
           <button className="btn btn-success" onClick={onOk}>
             OK（詳細リサーチへ）
