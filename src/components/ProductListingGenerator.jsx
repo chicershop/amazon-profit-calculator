@@ -44,11 +44,37 @@ const LISTING_RULES = `【0. 大前提（絶対厳守）】
 const ProductListingGenerator = ({ historyItem, onBack }) => {
   const [prompt, setPrompt] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showManualWordPicker, setShowManualWordPicker] = useState(false);
+  const [selectedManualWords, setSelectedManualWords] = useState([]);
 
   const competitors = historyItem?.detailResearch?.competitors || [];
   const keywords = historyItem?.detailResearch?.sellerSpriteData?.keywords || [];
   const productName = historyItem?.productName || historyItem?.inputs?.productName || '';
   const specialSpecs = historyItem?.detailResearch?.specialSpecs ?? '';
+
+  // 重複除去済みキーワード一覧（表示・選択用）
+  const uniqueKeywords = React.useMemo(() => {
+    const seen = new Set();
+    return (keywords || [])
+      .map((k) => (typeof k === 'string' ? k : k?.keyword))
+      .filter(Boolean)
+      .filter((kw) => {
+        const n = String(kw).trim();
+        if (!n || seen.has(n)) return false;
+        seen.add(n);
+        return true;
+      });
+  }, [keywords]);
+
+  const toggleManualWord = (word) => {
+    setSelectedManualWords((prev) =>
+      prev.includes(word) ? prev.filter((w) => w !== word) : [...prev, word]
+    );
+  };
+
+  const applyManualWordSelection = () => {
+    setShowManualWordPicker(false);
+  };
 
   const generatePrompt = () => {
     const competitorInfo = competitors.map(c =>
@@ -107,11 +133,67 @@ ${LISTING_RULES}`;
       <div className="form-section">
         <h3>キーワード情報</h3>
         {keywords.length > 0 ? (
-          <div className="keyword-display">
-            {keywords.map((k, i) => <span key={i} className="keyword-tag">{k.keyword}</span>)}
-          </div>
+          <>
+            <div className="keyword-display">
+              {keywords.map((k, i) => <span key={i} className="keyword-tag">{k.keyword}</span>)}
+            </div>
+            <p className="help-text">重複除去済み: {uniqueKeywords.length} ワード</p>
+            <div className="form-actions" style={{ marginTop: '0.75rem' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowManualWordPicker(true)}
+              >
+                マニュアル広告ワード選択
+              </button>
+            </div>
+          </>
         ) : <p className="no-data">データなし</p>}
       </div>
+
+      {selectedManualWords.length > 0 && (
+        <div className="form-section">
+          <h3>選択したマニュアル広告ワード</h3>
+          <div className="keyword-display">
+            {selectedManualWords.map((w, i) => (
+              <span key={i} className="keyword-tag keyword-tag-selected">{w}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showManualWordPicker && (
+        <div className="manual-word-picker-overlay" onClick={() => setShowManualWordPicker(false)}>
+          <div className="manual-word-picker-box" onClick={(e) => e.stopPropagation()}>
+            <h3>マニュアル広告ワード選択</h3>
+            <p className="help-text">追加するワードにチェックを入れてください（重複除去済み・{uniqueKeywords.length}件）</p>
+            <div className="manual-word-picker-list">
+              {uniqueKeywords.map((word) => (
+                <label key={word} className="manual-word-picker-item">
+                  <input
+                    type="checkbox"
+                    checked={selectedManualWords.includes(word)}
+                    onChange={() => toggleManualWord(word)}
+                  />
+                  <span>{word}</span>
+                </label>
+              ))}
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn btn-primary" onClick={applyManualWordSelection}>
+                選択を反映
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowManualWordPicker(false)}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="form-section">
         <h3>特記する仕様</h3>
