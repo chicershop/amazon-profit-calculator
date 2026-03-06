@@ -34,7 +34,51 @@ export async function getConfig() {
 export async function setOwner(ownerUid) {
   if (!db) throw new Error('Firebase が無効です');
   const ref = doc(db, CONFIG_COLLECTION, CONFIG_WORKSPACE);
-  await setDoc(ref, { ownerUid }, { merge: true });
+  await setDoc(ref, { ownerUid, approvedEmails: [], pendingAccess: [] }, { merge: true });
+}
+
+/** アクセス承認待ちを1件追加（新規登録者がログインしたときに呼ぶ） */
+export async function addPendingAccess(uid, email) {
+  if (!db) throw new Error('Firebase が無効です');
+  const ref = doc(db, CONFIG_COLLECTION, CONFIG_WORKSPACE);
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const pending = data.pendingAccess || [];
+  if (pending.some((p) => p.email === email)) return;
+  await updateDoc(ref, {
+    pendingAccess: [...pending, { uid, email, requestedAt: new Date().toISOString() }],
+  });
+}
+
+/** 承認待ちから1件削除（拒否時） */
+export async function removePendingAccess(email) {
+  if (!db) throw new Error('Firebase が無効です');
+  const ref = doc(db, CONFIG_COLLECTION, CONFIG_WORKSPACE);
+  const snap = await getDoc(ref);
+  const data = snap.data() || {};
+  const pending = (data.pendingAccess || []).filter((p) => p.email !== email);
+  await updateDoc(ref, { pendingAccess: pending });
+}
+
+/** メールアドレスを承認（approvedEmails に追加し、pending から削除） */
+export async function approveAccess(email) {
+  if (!db) throw new Error('Firebase が無効です');
+  const ref = doc(db, CONFIG_COLLECTION, CONFIG_WORKSPACE);
+  const snap = await getDoc(ref);
+  const data = snap.data() || {};
+  const approved = [...(data.approvedEmails || []).filter((e) => e !== email), email];
+  const pending = (data.pendingAccess || []).filter((p) => p.email !== email);
+  await updateDoc(ref, { approvedEmails: approved, pendingAccess: pending });
+}
+
+/** メールアドレスのアクセスを無効化（approvedEmails から削除） */
+export async function revokeAccess(email) {
+  if (!db) throw new Error('Firebase が無効です');
+  const ref = doc(db, CONFIG_COLLECTION, CONFIG_WORKSPACE);
+  const snap = await getDoc(ref);
+  const data = snap.data() || {};
+  const approved = (data.approvedEmails || []).filter((e) => e !== email);
+  await updateDoc(ref, { approvedEmails: approved });
 }
 
 /** 履歴一覧をリアルタイム購読 */

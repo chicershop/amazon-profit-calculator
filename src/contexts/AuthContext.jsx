@@ -1,18 +1,22 @@
 /**
- * 認証コンテキスト：ログイン状態・オーナー判定
+ * 認証コンテキスト：ログイン状態・オーナー判定・アクセス承認
  */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, isFirebaseEnabled } from '../firebase';
-import { getConfig, setOwner as setOwnerInFirestore } from '../services/firestore';
+import { getConfig, setOwner as setOwnerInFirestore, addPendingAccess } from '../services/firestore';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [ownerUid, setOwnerUid] = useState(null);
+  const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [ownerSetupDismissed, setOwnerSetupDismissed] = useState(false);
+
+  const ownerUid = config?.ownerUid ?? null;
+  const approvedEmails = config?.approvedEmails || [];
+  const pendingAccess = config?.pendingAccess || [];
 
   useEffect(() => {
     if (!auth) {
@@ -28,17 +32,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!isFirebaseEnabled || !user) {
-      setOwnerUid(null);
+      setConfig(null);
       return;
     }
     let cancelled = false;
     getConfig()
-      .then((config) => {
-        if (!cancelled && config?.ownerUid) setOwnerUid(config.ownerUid);
-        else if (!cancelled) setOwnerUid(null);
+      .then((c) => {
+        if (!cancelled) setConfig(c || null);
       })
       .catch(() => {
-        if (!cancelled) setOwnerUid(null);
+        if (!cancelled) setConfig(null);
       });
     return () => { cancelled = true; };
   }, [user]);
@@ -64,13 +67,35 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   const isOwner = !!user && !!ownerUid && user.uid === ownerUid;
+  const isApprovedUser = !!user && (isOwner || (user.email && approvedEmails.includes(user.email)));
   const showOwnerSetup = !!user && ownerUid === null && !ownerSetupDismissed;
+
+  /** 承認待ちリストに自分を追加（未承認ユーザーがログインしたとき1回だけ） */
+  const ensurePendingRequest = useCallback(async () => {
+    if (!user?.email || isOwner || isApprovedUser) return;
+    if (pendingAccess.some((p) => p.email === user.email)) return;
+    try {
+      await addPendingAccess(user.uid, user.email);
+    } catch (_) {}
+  }, [user, isOwner, isApprovedUser, pendingAccess]);
+
+  const refreshConfig = useCallback(async () => {
+    if (!isFirebaseEnabled || !user) return;
+    const c = await getConfig();
+    setConfig(c || null);
+  }, [user]);
 
   const value = {
     user,
     loading,
+    config,
+    setConfig,
+    refreshConfig,
     isOwner,
     ownerUid,
+    isApprovedUser,
+    approvedEmails,
+    pendingAccess,
     isFirebaseEnabled,
     signIn,
     signUp,
@@ -79,6 +104,7 @@ export function AuthProvider({ children }) {
     canSetOwner: !!user && ownerUid === null,
     showOwnerSetup,
     dismissOwnerSetup: () => setOwnerSetupDismissed(true),
+    ensurePendingRequest,
   };
 
   return (

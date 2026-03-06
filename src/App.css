@@ -154,6 +154,96 @@ body {
   gap: 0.75rem;
 }
 
+/* 承認待ち画面 */
+.pending-approval-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--light-gray);
+}
+
+.pending-approval-box {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  max-width: 480px;
+  width: 100%;
+}
+
+.pending-approval-box h2 {
+  margin-bottom: 1rem;
+}
+
+.pending-approval-box p {
+  margin-bottom: 1rem;
+}
+
+.pending-approval-note {
+  font-size: 0.875rem;
+  color: var(--medium-gray);
+}
+
+.pending-approval-box .btn {
+  margin-top: 0.5rem;
+}
+
+/* アクセス管理 */
+.access-management {
+  max-width: 640px;
+}
+
+.access-management h2 {
+  margin-bottom: 0.5rem;
+}
+
+.access-management .form-section {
+  margin-top: 1.5rem;
+}
+
+.access-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.access-list-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+}
+
+.access-email {
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.access-meta {
+  font-size: 0.875rem;
+  color: var(--medium-gray);
+}
+
+.access-badge {
+  font-size: 0.75rem;
+  background: var(--success-color);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.access-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
 .header-user {
   display: flex;
   align-items: center;

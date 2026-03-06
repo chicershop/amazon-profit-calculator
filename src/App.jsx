@@ -9,6 +9,8 @@ import HistoryList from './components/HistoryList';
 import Settings from './components/Settings';
 import Login from './components/Login';
 import SetOwnerScreen from './components/SetOwnerScreen';
+import PendingApprovalScreen from './components/PendingApprovalScreen';
+import AccessManagement from './components/AccessManagement';
 import { useHistory, useSettings } from './hooks/useLocalStorage';
 import { useFirestoreHistory } from './hooks/useFirestoreHistory';
 import { useCalculation } from './hooks/useCalculation';
@@ -21,6 +23,7 @@ const VIEWS = {
   CALCULATOR: 'calculator',
   HISTORY: 'history',
   SETTINGS: 'settings',
+  ACCESS_MANAGEMENT: 'access_management',
 };
 
 const STEPS = {
@@ -38,7 +41,7 @@ function App() {
   const [currentStep, setCurrentStep] = useState(STEPS.INPUT);
   const [currentHistoryId, setCurrentHistoryId] = useState(null);
 
-  const { user, loading, isFirebaseEnabled, showOwnerSetup, isOwner, signOut } = useAuth();
+  const { user, loading, isFirebaseEnabled, showOwnerSetup, isOwner, isApprovedUser, ensurePendingRequest, signOut } = useAuth();
   const localHistory = useHistory();
   const firestoreHistory = useFirestoreHistory();
   const historyApi = isFirebaseEnabled && user ? firestoreHistory : localHistory;
@@ -236,6 +239,15 @@ function App() {
   if (showOwnerSetup) {
     return <SetOwnerScreen />;
   }
+  if (isFirebaseEnabled && user && !isApprovedUser) {
+    return (
+      <PendingApprovalScreen
+        user={user}
+        onEnsurePending={ensurePendingRequest}
+        onSignOut={signOut}
+      />
+    );
+  }
 
   // メインコンテンツのレンダリング
   const renderMainContent = () => {
@@ -261,6 +273,9 @@ function App() {
             defaultSettings={defaultSettings}
           />
         );
+
+      case VIEWS.ACCESS_MANAGEMENT:
+        return <AccessManagement />;
 
       case VIEWS.CALCULATOR:
       default:
@@ -366,6 +381,14 @@ function App() {
           >
             設定
           </button>
+          {isOwner && (
+            <button
+              className={`nav-button ${currentView === VIEWS.ACCESS_MANAGEMENT ? 'active' : ''}`}
+              onClick={() => setCurrentView(VIEWS.ACCESS_MANAGEMENT)}
+            >
+              アクセス管理
+            </button>
+          )}
           {user && (
             <span className="header-user">
               <span className="user-email">{user.email}</span>
