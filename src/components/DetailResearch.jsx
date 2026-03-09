@@ -14,6 +14,7 @@ const DetailResearch = ({ initialData, onSave, onCancel }) => {
     salePrice: '',
     monthlySales: '',
     monthlyRevenue: '',
+    memo: '',
   };
 
   // 履歴から開いた場合も月間販売額＝販売価格×月間販売数で自動反映

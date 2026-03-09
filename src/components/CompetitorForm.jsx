@@ -103,6 +103,19 @@ const CompetitorForm = ({ competitor, index, onChange, onRemove, canRemove }) =>
           <p className="help-text">販売価格と月間販売数を入力すると自動計算されます（上書き可能）</p>
         </div>
       </div>
+
+      <div className="form-row">
+        <div className="form-group form-group-full">
+          <label>メモ</label>
+          <textarea
+            value={competitor.memo ?? ''}
+            onChange={handleChange('memo')}
+            placeholder="このライバルについてのメモ（自由記入）"
+            rows={3}
+            className="competitor-memo-input"
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -41,16 +41,25 @@ const LISTING_RULES = `【0. 大前提（絶対厳守）】
  * 商品ページ作成支援コンポーネント
  * 完了ステータスの商品向けにClaude Code用プロンプトを生成
  */
-const ProductListingGenerator = ({ historyItem, onBack }) => {
+const ProductListingGenerator = ({ historyItem, onBack, onSaveManualAdWords }) => {
   const [prompt, setPrompt] = useState('');
   const [copied, setCopied] = useState(false);
   const [showManualWordPicker, setShowManualWordPicker] = useState(false);
-  const [selectedManualWords, setSelectedManualWords] = useState([]);
+  const [savedFeedback, setSavedFeedback] = useState(false);
+  const [selectedManualWords, setSelectedManualWords] = useState(
+    () => historyItem?.detailResearch?.manualAdWords || []
+  );
 
   const competitors = historyItem?.detailResearch?.competitors || [];
   const keywords = historyItem?.detailResearch?.sellerSpriteData?.keywords || [];
   const productName = historyItem?.productName || historyItem?.inputs?.productName || '';
   const specialSpecs = historyItem?.detailResearch?.specialSpecs ?? '';
+
+  // 履歴が変わったときに保存済みのマニュアル広告ワードを反映
+  React.useEffect(() => {
+    const saved = historyItem?.detailResearch?.manualAdWords;
+    if (Array.isArray(saved)) setSelectedManualWords(saved);
+  }, [historyItem?.detailResearch?.manualAdWords]);
 
   // 重複除去済みキーワード一覧（表示・選択用）
   const uniqueKeywords = React.useMemo(() => {
@@ -74,6 +83,14 @@ const ProductListingGenerator = ({ historyItem, onBack }) => {
 
   const applyManualWordSelection = () => {
     setShowManualWordPicker(false);
+  };
+
+  const handleSaveManualWords = () => {
+    if (typeof onSaveManualAdWords === 'function') {
+      onSaveManualAdWords(selectedManualWords);
+      setSavedFeedback(true);
+      setTimeout(() => setSavedFeedback(false), 2000);
+    }
   };
 
   const generatePrompt = () => {
@@ -159,6 +176,14 @@ ${LISTING_RULES}`;
               <span key={i} className="keyword-tag keyword-tag-selected">{w}</span>
             ))}
           </div>
+          {onSaveManualAdWords && (
+            <div className="form-actions" style={{ marginTop: '0.75rem' }}>
+              <button type="button" className="btn btn-primary" onClick={handleSaveManualWords}>
+                保存
+              </button>
+              {savedFeedback && <span className="save-feedback">保存しました</span>}
+            </div>
+          )}
         </div>
       )}
 

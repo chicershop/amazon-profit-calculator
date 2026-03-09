@@ -128,6 +128,18 @@ function App() {
     setCurrentStep(STEPS.PRODUCT_LISTING);
   }, [currentHistoryId, getHistoryById, updateHistory]);
 
+  // マニュアル広告ワードを履歴に保存（商品ページ作成支援ページから）
+  const handleSaveManualAdWords = useCallback(
+    (manualAdWords) => {
+      if (!currentHistoryId) return;
+      const current = getHistoryById(currentHistoryId);
+      updateHistory(currentHistoryId, {
+        detailResearch: { ...(current?.detailResearch || {}), manualAdWords: manualAdWords || [] },
+      });
+    },
+    [currentHistoryId, getHistoryById, updateHistory]
+  );
+
   // Chatwork画面に戻る
   const handleBackToChatwork = useCallback(() => {
     setCurrentStep(STEPS.CHATWORK);
@@ -350,6 +362,7 @@ function App() {
           <ProductListingGenerator
             historyItem={currentHistoryItem}
             onBack={handleBackToChatwork}
+            onSaveManualAdWords={handleSaveManualAdWords}
           />
         );
 
