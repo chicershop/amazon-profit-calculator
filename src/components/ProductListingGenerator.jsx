@@ -46,6 +46,7 @@ const ProductListingGenerator = ({ historyItem, onBack, onSaveManualAdWords }) =
   const [copied, setCopied] = useState(false);
   const [showManualWordPicker, setShowManualWordPicker] = useState(false);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [manualCopied, setManualCopied] = useState(false);
   const [selectedManualWords, setSelectedManualWords] = useState(
     () => historyItem?.detailResearch?.manualAdWords || []
   );
@@ -90,6 +91,16 @@ const ProductListingGenerator = ({ historyItem, onBack, onSaveManualAdWords }) =
       onSaveManualAdWords(selectedManualWords);
       setSavedFeedback(true);
       setTimeout(() => setSavedFeedback(false), 2000);
+    }
+  };
+
+  const handleCopyManualWords = async () => {
+    if (!selectedManualWords.length) return;
+    const text = selectedManualWords.join('\n');
+    const success = await copyToClipboard(text);
+    if (success) {
+      setManualCopied(true);
+      setTimeout(() => setManualCopied(false), 2000);
     }
   };
 
@@ -181,7 +192,18 @@ ${LISTING_RULES}`;
               <button type="button" className="btn btn-primary" onClick={handleSaveManualWords}>
                 保存
               </button>
-              {savedFeedback && <span className="save-feedback">保存しました</span>}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCopyManualWords}
+              >
+                一括コピー
+              </button>
+              {(savedFeedback || manualCopied) && (
+                <span className="save-feedback">
+                  {manualCopied ? 'コピーしました' : '保存しました'}
+                </span>
+              )}
             </div>
           )}
         </div>
