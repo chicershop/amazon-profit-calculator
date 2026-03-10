@@ -32,6 +32,8 @@ const DetailResearch = ({ initialData, onSave, onCancel }) => {
   );
 
   const [notes, setNotes] = useState(initialData?.notes || '');
+  // 商品ページ作成支援で選択したマニュアル広告ワード（ここでは編集しないが、保存時に維持する）
+  const [manualAdWords] = useState(initialData?.manualAdWords || []);
   const [buyUrl1688, setBuyUrl1688] = useState(initialData?.buyUrl1688 || '');
   const [researchLoading, setResearchLoading] = useState(false);
   const [researchResult, setResearchResult] = useState(initialData?.researchResult || null);
@@ -53,6 +55,7 @@ const DetailResearch = ({ initialData, onSave, onCancel }) => {
       notes,
       buyUrl1688,
       researchResult,
+      manualAdWords,
     });
   };
 
