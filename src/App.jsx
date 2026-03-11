@@ -234,28 +234,23 @@ function App() {
     updateHistory(id, { status: 'completed' });
   }, [updateHistory]);
 
-  // 履歴を複製（商品名に「（コピー）」を付けた新規として追加）
+  // 履歴を複製（商品名に「（コピー）」を付けた新規として一行追加・最新日時で先頭に表示）
   const handleDuplicateHistory = useCallback(
     async (item) => {
       const baseName = item.productName || item.inputs?.productName || '';
       const copyName = baseName ? `${baseName}（コピー）` : '（コピー）';
+      // 保存用に不要なフィールドを除いて全情報をコピー（id/日時は addHistory 側で付与）
+      const { id: _id, createdAt, updatedAt, createdAtOrder, updatedAtOrder, createdBy, ...rest } = item;
       const payload = {
-        asin: item.asin,
-        productLink: item.productLink,
+        ...rest,
         productName: copyName,
-        inputs: { ...(item.inputs || {}), productName: copyName },
-        result: item.result,
-        detailResearch: item.detailResearch,
+        inputs: { ...(rest.inputs || {}), productName: copyName },
         status: 'pending',
       };
-      const newId = await addHistory(payload);
-      setCurrentHistoryId(newId);
-      setCurrentView(VIEWS.CALCULATOR);
-      calculation.resetInputs();
-      calculation.updateInputs(payload.inputs);
-      setCurrentStep(STEPS.INPUT);
+      await addHistory(payload);
+      setCurrentView(VIEWS.HISTORY);
     },
-    [addHistory, calculation]
+    [addHistory]
   );
 
   // 現在の履歴データを取得
