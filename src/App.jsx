@@ -234,6 +234,30 @@ function App() {
     updateHistory(id, { status: 'completed' });
   }, [updateHistory]);
 
+  // 履歴を複製（商品名に「（コピー）」を付けた新規として追加）
+  const handleDuplicateHistory = useCallback(
+    async (item) => {
+      const baseName = item.productName || item.inputs?.productName || '';
+      const copyName = baseName ? `${baseName}（コピー）` : '（コピー）';
+      const payload = {
+        asin: item.asin,
+        productLink: item.productLink,
+        productName: copyName,
+        inputs: { ...(item.inputs || {}), productName: copyName },
+        result: item.result,
+        detailResearch: item.detailResearch,
+        status: 'pending',
+      };
+      const newId = await addHistory(payload);
+      setCurrentHistoryId(newId);
+      setCurrentView(VIEWS.CALCULATOR);
+      calculation.resetInputs();
+      calculation.updateInputs(payload.inputs);
+      setCurrentStep(STEPS.INPUT);
+    },
+    [addHistory, calculation]
+  );
+
   // 現在の履歴データを取得
   const currentHistoryItem = currentHistoryId ? getHistoryById(currentHistoryId) : null;
 
@@ -270,6 +294,7 @@ function App() {
             history={history}
             onSelect={handleSelectHistory}
             onDelete={handleDeleteHistory}
+            onDuplicate={handleDuplicateHistory}
             onClear={handleClearHistory}
             onApprove={handleApprove}
             isOwner={isOwner}

@@ -5,7 +5,7 @@ import { downloadCSV, downloadJSON } from '../utils/exportData';
  * 履歴一覧コンポーネント
  * isOwner の場合、承認待ちに「承認」ボタンを表示
  */
-const HistoryList = ({ history, onSelect, onDelete, onClear, onApprove, isOwner }) => {
+const HistoryList = ({ history, onSelect, onDelete, onDuplicate, onClear, onApprove, isOwner }) => {
   const [filter, setFilter] = useState('all');
   const [searchText, setSearchText] = useState('');
 
@@ -174,6 +174,15 @@ const HistoryList = ({ history, onSelect, onDelete, onClear, onApprove, isOwner 
                       >
                         詳細
                       </button>
+                      {onDuplicate && (
+                        <button
+                          type="button"
+                          className="btn btn-small btn-secondary"
+                          onClick={() => onDuplicate(item)}
+                        >
+                          複製
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="btn btn-small btn-danger"
