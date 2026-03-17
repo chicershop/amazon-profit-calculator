@@ -200,6 +200,21 @@ const ProfitCalculator = ({ inputs, onInputChange, onCalculate, onStartNew, erro
 
         {error && <div className="error-message">{error}</div>}
 
+        <div className="form-section">
+          <h3>メモ</h3>
+          <div className="form-row">
+            <div className="form-group">
+              <textarea
+                id="memo"
+                value={inputs.memo ?? ''}
+                onChange={handleInputChange('memo')}
+                placeholder="自由にメモを記入できます"
+                rows={4}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="form-actions">
           <button type="submit" className="btn btn-primary">計算する</button>
           {onStartNew && (

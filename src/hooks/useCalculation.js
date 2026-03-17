@@ -53,6 +53,7 @@ export const useCalculation = (settings) => {
       salesFee: '',
       storageFee: '',
       fbaFee: '',
+      memo: '',
     });
     setResult(null);
     setError(null);
@@ -158,6 +159,7 @@ const getFieldLabel = (field) => {
     salesFee: '販売手数料',
     storageFee: '在庫保管手数料',
     fbaFee: 'FBA配送代行手数料',
+    memo: 'メモ',
   };
   return labels[field] || field;
 };
