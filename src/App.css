@@ -680,6 +680,31 @@ h4 {
   min-height: 72px;
 }
 
+.competitor-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.competitor-list-header h3 {
+  margin-bottom: 0;
+}
+
+.competitor-total-revenue {
+  font-size: 1rem;
+  color: var(--dark-gray);
+  background-color: var(--light-gray);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--border-radius);
+}
+
+.competitor-total-revenue strong {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
 .competitor-form {
   background-color: var(--light-gray);
   padding: 1rem;

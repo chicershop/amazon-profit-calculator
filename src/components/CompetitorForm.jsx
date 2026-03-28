@@ -153,9 +153,19 @@ export const CompetitorFormList = ({ competitors, onUpdate, onAdd, onRemove }) =
     onUpdate(updated);
   };
 
+  const totalMonthlyRevenue = competitors.reduce((sum, c) => {
+    const v = parseFloat(c.monthlyRevenue);
+    return sum + (Number.isNaN(v) ? 0 : v);
+  }, 0);
+
   return (
     <div className="competitor-form-list">
-      <h3>ライバル情報</h3>
+      <div className="competitor-list-header">
+        <h3>ライバル情報</h3>
+        <div className="competitor-total-revenue">
+          月間販売額 合計：<strong>¥{totalMonthlyRevenue.toLocaleString()}</strong>
+        </div>
+      </div>
       {competitors.map((competitor, index) => (
         <CompetitorForm
           key={index}
